@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Déclaration d'usage de l'IA · FGSE</title>
+<meta name="description" content="Construire sa fiche de déclaration des usages de l'IA à partir de la grille d'analyse (8 activités, 5 niveaux d'intégration), puis l'exporter en PDF ou en Word.">
+<style>
+:root{
+  color-scheme:light;
+  --blue:#0037eb; --navy:#002664; --ink:#0a1f30; --slate:#42566a; --line:#c9d3dd;
+  --bg:#eff3f6; --tint:#e8f0fe; --white:#fff; --ochre:#8a5a24; --err:#b3261e;
+  --font:Archivo,"Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1.45;font-size:16px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.band-navy{background:var(--navy);height:10px}
+.band-blue{background:var(--blue);color:#fff;font-size:14px;font-weight:600;letter-spacing:.02em}
+.band-blue .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:8px;padding-bottom:8px}
+.lang{display:flex;gap:4px}
+.lang button{font:inherit;font-size:13px;border:1px solid rgba(255,255,255,.6);background:transparent;color:#fff;padding:3px 10px;border-radius:2px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:#fff;color:var(--navy);border-color:#fff}
+.hero{background:var(--navy);color:#fff;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-110px;top:-150px;width:340px;height:340px;border-radius:50%;background:var(--blue)}
+.hero .wrap{position:relative;z-index:1;padding-top:36px;padding-bottom:36px}
+.hero h1{margin:0 0 10px;font-size:clamp(28px,4.4vw,42px);line-height:1.1;max-width:18em}
+.hero p{margin:0;max-width:44em;color:#dbe4f3;font-size:17px}
+main{padding:28px 0 60px}
+section{background:var(--white);border:1px solid var(--line);border-radius:2px;padding:22px 24px;margin-bottom:22px}
+h2{margin:0 0 4px;font-size:22px;color:var(--navy)}
+h2 .n{display:inline-block;min-width:28px;height:28px;line-height:28px;text-align:center;background:var(--navy);color:#fff;border-radius:50%;font-size:14px;margin-right:10px;vertical-align:2px}
+.sub{margin:0 0 16px;color:var(--slate)}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+label.f{display:block;font-size:14px;font-weight:600;color:var(--slate)}
+label.f input,label.f textarea{display:block;width:100%;margin-top:4px;font:inherit;font-weight:400;color:var(--ink);padding:8px 10px;border:1px solid var(--line);border-radius:2px;background:#fff}
+label.f textarea{min-height:64px;resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible,.lv input:focus-visible+span{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 4px var(--blue)}
+fieldset.act{border:0;border-top:1px solid var(--line);margin:0;padding:18px 0 6px;min-width:0}
+fieldset.act:first-of-type{border-top:0;padding-top:4px}
+fieldset.act legend{padding:0;font-size:18px;font-weight:700;color:var(--navy);float:left;width:100%}
+fieldset.act .d{clear:both;margin:0 0 10px;color:var(--slate);font-size:14.5px}
+fieldset.act.missing legend{color:var(--err)}
+fieldset.act.missing .lvs{outline:2px solid var(--err);outline-offset:4px}
+.lvs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.lv{position:relative;display:block;cursor:pointer}
+.lv input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.lv span{display:block;height:100%;border:1px solid var(--line);border-radius:2px;padding:9px 10px;background:#fff;font-size:13.5px;color:var(--slate)}
+.lv span b{display:block;color:var(--navy);font-size:14.5px;margin-bottom:2px}
+.lv input:checked+span{border-color:var(--blue);background:var(--tint);box-shadow:inset 0 0 0 1px var(--blue);color:var(--ink)}
+.more{display:grid;grid-template-columns:1fr 2fr;gap:12px 18px;margin:12px 0 6px;padding:12px 14px;background:var(--bg);border-left:3px solid var(--blue)}
+.more[hidden]{display:none}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 14px}
+button.btn{font:inherit;font-weight:600;border-radius:2px;padding:10px 16px;cursor:pointer;border:1px solid var(--navy);background:#fff;color:var(--navy)}
+button.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+button.btn.ghost{border-color:var(--line);color:var(--slate);font-weight:500}
+.count{color:var(--slate);font-size:14.5px}
+.msg{margin:0 0 14px;padding:10px 12px;border-left:3px solid var(--err);background:#fdecea;color:#7a1a14;font-size:15px}
+.msg[hidden]{display:none}
+.note{color:var(--slate);font-size:14px;margin:12px 0 0}
+
+/* fiche */
+#fiche{border:1px solid var(--line);padding:26px 28px;background:#fff;overflow-x:auto}
+#fiche h3{margin:0 0 2px;font-size:22px;color:var(--navy)}
+#fiche .src{margin:0 0 14px;color:var(--slate);font-size:13px}
+#fiche dl{display:grid;grid-template-columns:max-content 1fr;gap:3px 14px;margin:0 0 16px;font-size:14.5px}
+#fiche dt{color:var(--slate);font-weight:600}
+#fiche dd{margin:0}
+#fiche h4{margin:18px 0 6px;font-size:15px;color:var(--navy);text-transform:uppercase;letter-spacing:.04em}
+#fiche table{width:100%;border-collapse:collapse;font-size:13.5px}
+#fiche th,#fiche td{border:1px solid var(--line);padding:6px 8px;vertical-align:middle}
+#fiche thead th{background:var(--navy);color:#fff;font-weight:700;text-align:center}
+#fiche tbody th{text-align:left;color:var(--navy)}
+#fiche table.grid td{text-align:center;width:13%}
+#fiche table.grid tbody tr:nth-child(even){background:var(--tint)}
+#fiche table.det td{vertical-align:top;white-space:pre-wrap;overflow-wrap:anywhere}
+.bx{display:inline-block;width:15px;height:15px;border:1.5px solid var(--navy);vertical-align:middle;position:relative;background:#fff}
+.bx.on::before,.bx.on::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:1.6px;background:var(--navy);transform:rotate(45deg)}
+.bx.on::after{transform:rotate(-45deg)}
+#fiche .empty{color:var(--slate);font-style:italic}
+#fiche .decl{margin:18px 0 0;font-size:14.5px}
+#fiche .sign{display:flex;gap:40px;margin-top:34px;font-size:13.5px;color:var(--slate)}
+#fiche .sign div{flex:1;border-top:1px solid var(--ink);padding-top:4px}
+#fiche .foot{margin:18px 0 0;font-size:11.5px;color:var(--slate)}
+footer{color:var(--slate);font-size:13.5px;padding:0 0 40px}
+footer p{margin:0 0 6px}
+
+@media (max-width:820px){
+  .fields,.more{grid-template-columns:1fr}
+  .lvs{grid-template-columns:1fr}
+  section{padding:18px 16px}
+  #fiche{padding:16px 14px}
+}
+@media print{
+  @page{size:A4;margin:16mm}
+  body{background:#fff;font-size:11pt}
+  .band-navy,.band-blue,.hero,footer,section:not(#s3),#s3>h2,#s3>.sub,#s3>.bar,#s3>.msg,#s3>.note{display:none!important}
+  main{padding:0}
+  .wrap{max-width:none;padding:0}
+  section#s3{border:0;padding:0;margin:0}
+  #fiche{border:0;padding:0;overflow:visible}
+  #fiche thead th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #fiche table.grid tbody tr:nth-child(even){-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #fiche tr,#fiche .sign,#fiche .decl{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="band-navy"></div>
+<div class="band-blue"><div class="wrap">
+  <span id="t-fac"></span>
+  <div class="lang" role="group" aria-label="Langue / Language">
+    <button type="button" data-lang="fr">FR</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+</div></div>
+<header class="hero"><div class="wrap">
+  <h1 id="t-title"></h1>
+  <p id="t-lead"></p>
+</div></header>
+
+<main class="wrap">
+  <section id="s1">
+    <h2><span class="n">1</span><span id="t-h1"></span></h2>
+    <p class="sub" id="t-s1"></p>
+    <div class="fields" id="meta"></div>
+  </section>
+
+  <section id="s2">
+    <h2><span class="n">2</span><span id="t-h2"></span></h2>
+    <p class="sub" id="t-s2"></p>
+    <div class="bar">
+      <button type="button" class="btn" id="b-none"></button>
+      <span class="count" id="count" aria-live="polite"></span>
+    </div>
+    <div id="acts"></div>
+  </section>
+
+  <section id="s3">
+    <h2><span class="n">3</span><span id="t-h3"></span></h2>
+    <p class="sub" id="t-s3"></p>
+    <p class="msg" id="msg" role="alert" hidden></p>
+    <div class="bar">
+      <button type="button" class="btn pri" id="b-pdf"></button>
+      <button type="button" class="btn pri" id="b-docx"></button>
+      <button type="button" class="btn ghost" id="b-reset"></button>
+    </div>
+    <div id="fiche" aria-live="off"></div>
+    <p class="note" id="t-pdfnote"></p>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p id="t-f1"></p>
+  <p id="t-f2"></p>
+</footer>
+
+<script>
+"use strict";
+/* ---------- La grille (source : « Grille d'analyse des usages d'IA », J. Lüthi, FGSE) ---------- */
+const LEVELS = {
+  fr: [
+    {name:"Aucune", desc:"L'IA n'a pas été utilisée, quelle que soit l'étape. Le travail est entièrement issu de l'étudiant·e."},
+    {name:"Minimal", desc:"L'IA a permis de réaliser partiellement des tâches. L'impact sur le contenu est minime."},
+    {name:"Ponctuel", desc:"L'IA est utilisée de façon ciblée pour soutenir certaines parties du travail. L'étudiant·e reste entièrement maître·sse du contenu."},
+    {name:"Collaboratif", desc:"L'IA est un partenaire actif dans la co-création. La contribution de l'IA devient significative."},
+    {name:"Majoritaire", desc:"L'IA a produit la majeure partie du contenu. L'étudiant·e a joué un rôle de relecture, d'ajustement ou de validation, mais n'est pas l'auteur·e principal·e du travail."}
+  ],
+  en: [
+    {name:"None", desc:"AI was not used at any stage of the work. The output is entirely the student's own."},
+    {name:"Minimal", desc:"AI was used to perform simple tasks (e.g. correction, defining terms, rephrasing). Its impact on the content is minimal."},
+    {name:"Targeted", desc:"AI was used in a targeted way to support specific parts of the work. The student remains fully in control of the content."},
+    {name:"Collaborative", desc:"AI acted as an active partner in the creation process. The AI's contribution becomes significant."},
+    {name:"Majority", desc:"AI produced the majority of the content. The student played the role of reviewer, editor or validator, but is not the primary author of the work."}
+  ]
+};
+const ACTS = [
+  {id:"BR",
+   fr:{name:"Brainstorming", desc:"Produire des idées, des plans ou structurer un raisonnement",
+       lv:["Aucune génération d'idées par IA","Génération d'idées isolées","Plan structuré avec appui IA","Organisation du plan en dialogue avec l'IA","Contenu principalement généré par IA"]},
+   en:{name:"Brainstorming", desc:"Generate ideas, create plans, or structure an argument",
+       lv:["No ideas generated by AI","Generation of isolated ideas","Structured outline created with AI support","Organisation of the outline developed in dialogue with AI","Content primarily generated by AI"]}},
+  {id:"RC",
+   fr:{name:"Recherche / Compréhension", desc:"Explorer, synthétiser ou vulgariser des informations",
+       lv:["Recherche personnelle","Demandes partielles d'explication","Appui ponctuel pour des synthèses partielles","IA mobilisée pour reformuler des synthèses ou des explications","Synthèse intégrale produite par IA"]},
+   en:{name:"Research / Comprehension", desc:"Explore information, synthesise content, or simplify complex topics",
+       lv:["Personal research only","Specific requests for explanations","Support for partial summaries","AI used to formulate summaries or explanations","Complete summary produced by AI"]}},
+  {id:"PA",
+   fr:{name:"Programmation / Analyse", desc:"Générer du code, traiter ou analyser des données",
+       lv:["Codage ou analyse sans IA","Génération de lignes de code simples","L'IA propose des segments de code intégrés","Travail de programmation ou d'analyse mené en dialogue avec l'IA","Résultat codé ou analysé majoritairement par IA"]},
+   en:{name:"Programming / Analysis", desc:"Generate code, process data, or perform data analysis",
+       lv:["Coding or analysis performed without AI","Generation of simple lines of code","AI suggests code segments integrated into the analysis","Programming or analytical work conducted in dialogue with AI","Resulting code or analysis primarily produced by AI"]}},
+  {id:"RE",
+   fr:{name:"Rédaction", desc:"Rédiger tout ou partie du texte",
+       lv:["Rédaction sans IA","Rédaction d'éléments de phrase","Paragraphes écrits avec appui IA ciblé","L'IA propose du contenu substantiel ajusté par l'étudiant·e","Texte essentiellement rédigé par l'IA"]},
+   en:{name:"Writing / Editing", desc:"Draft all or part of the text",
+       lv:["Writing without AI","Writing of sentence fragments","Paragraphs written with targeted AI support","AI proposes substantial content adjusted by the student","Text essentially drafted by AI"]}},
+  {id:"COR",
+   fr:{name:"Correction", desc:"Corriger tout ou partie du texte",
+       lv:["Correction manuelle","Vérification orthographique simple","Amélioration stylistique de certains passages","Révision complète avec l'IA en co-correction","Texte révisé et corrigé principalement par IA"]},
+   en:{name:"Proofreading", desc:"Correct all or part of the text",
+       lv:["Manual corrections only","Basic spell-checking","Stylistic improvements to specific passages","Complete revision using AI for co-editing","Text reviewed and corrected primarily by AI"]}},
+  {id:"MT",
+   fr:{name:"Mise en forme", desc:"Définir la mise en forme (taille, police, structure)",
+       lv:["Mise en forme manuelle","Ajustement de la mise en page","Appui sur des segments spécifiques","Travail global de mise en page","Résultat final produit presque entièrement par IA"]},
+   en:{name:"Formatting", desc:"Adjust layout, design, or presentation formatting",
+       lv:["Manual formatting","Layout adjustments","Support for specific segments","Overall layout work","Final output produced almost entirely by AI"]}},
+  {id:"CRI",
+   fr:{name:"Design", desc:"Créer des illustrations, des images ou du matériel vidéo",
+       lv:["Aucune création générée par IA","Illustrations générées à titre exploratoire","Une ou deux illustrations intégrées au travail","Co-construction visuelle avec l'IA","Images principales du travail générées par l'IA"]},
+   en:{name:"Design", desc:"Create illustrations, images or video material",
+       lv:["No AI-generated creations","Illustrations generated for exploratory purposes","One or two illustrations integrated into the work","Visual co-creation with AI","Main images in the work generated by AI"]}},
+  {id:"TR",
+   fr:{name:"Traduction", desc:"Traduire le texte original",
+       lv:["Traduction humaine uniquement","Traduction de phrases isolées","Traduction d'extraits ciblés","Traduction complète modifiée par l'étudiant·e","Texte traduit entièrement par IA"]},
+   en:{name:"Translation", desc:"Translate original text",
+       lv:["Human translation only","Translation of isolated sentences","Translation of targeted extracts","Full translation modified by the student","Text translated entirely by AI"]}}
+];
+const META = ["name","course","title","date"];
+const T = {
+  fr:{
+    fac:"Faculté des géosciences et de l'environnement",
+    docTitle:"Déclaration d'usage de l'IA · FGSE",
+    title:"Déclaration d'usage de l'IA",
+    lead:"Pour chaque activité de votre travail, indiquez le niveau d'intégration de l'IA. La fiche se construit au fur et à mesure. Vous l'exportez ensuite en PDF ou en Word pour la joindre à votre rendu.",
+    h1:"Votre travail", s1:"Ces informations figurent en tête de la fiche.",
+    name:"Nom et prénom", course:"Enseignement", title_:"Titre du travail", date:"Date",
+    h2:"Vos usages, activité par activité",
+    s2:"Huit activités, cinq niveaux. Choisissez pour chacune le niveau qui décrit le mieux ce que vous avez fait.",
+    none:"Je n'ai utilisé l'IA pour aucune activité",
+    count:(n,t)=>n+" activité"+(n>1?"s":"")+" renseignée"+(n>1?"s":"")+" sur "+t,
+    tool:"Outil(s) utilisé(s)", toolPh:"p. ex. Copilot, ChatGPT, DeepL",
+    detail:"Précisions (facultatif)", detailPh:"Ce que vous avez demandé, ce que vous avez gardé ou modifié",
+    h3:"Votre fiche", s3:"Aperçu de la fiche telle qu'elle sera exportée.",
+    pdf:"Exporter en PDF", docx:"Exporter en Word (.docx)", reset:"Tout effacer",
+    resetQ:"Effacer toutes les réponses ?",
+    missing:n=>"Il reste "+n+" activité"+(n>1?"s":"")+" sans niveau. Indiquez un niveau pour chacune avant d'exporter.",
+    pdfnote:"Export PDF : la fenêtre d'impression s'ouvre, choisissez « Enregistrer au format PDF » comme destination.",
+    fTitle:"Déclaration d'usage de l'IA",
+    fSrc:"Grille d'analyse des usages d'IA, Faculté des géosciences et de l'environnement, Université de Lausanne",
+    fGrid:"Grille de déclaration d'usage", fCorner:"Activités / Niveaux d'intégration",
+    fDet:"Détail des usages déclarés", cAct:"Activité", cLv:"Niveau", cWhat:"Ce que cela recouvre", cTool:"Outil(s)", cDet:"Précisions",
+    noUse:"Aucune utilisation de l'IA n'est déclarée pour ce travail.",
+    decl:"Je déclare que cette grille décrit fidèlement l'usage que j'ai fait de l'IA dans ce travail.",
+    sDate:"Lieu et date", sSign:"Signature",
+    unset:"non renseigné", file:"declaration-usage-ia",
+    f1:"Grille d'analyse des usages d'IA : Johann Lüthi, Faculté des géosciences et de l'environnement, Université de Lausanne. Cette page n'est pas une publication officielle de l'UNIL.",
+    f2:"Aucune donnée n'est transmise : vos réponses restent dans votre navigateur, sur cet appareil."
+  },
+  en:{
+    fac:"Faculty of Geosciences and Environment",
+    docTitle:"AI usage declaration · FGSE",
+    title:"AI usage declaration",
+    lead:"For each activity in your work, indicate the level of AI integration. The form builds itself as you go. You can then export it as a PDF or Word file and attach it to your submission.",
+    h1:"Your work", s1:"This information appears at the top of the form.",
+    name:"Full name", course:"Course", title_:"Title of the work", date:"Date",
+    h2:"Your uses, activity by activity",
+    s2:"Eight activities, five levels. For each one, choose the level that best describes what you did.",
+    none:"I did not use AI for any activity",
+    count:(n,t)=>n+" of "+t+" activities completed",
+    tool:"Tool(s) used", toolPh:"e.g. Copilot, ChatGPT, DeepL",
+    detail:"Details (optional)", detailPh:"What you asked for, what you kept or changed",
+    h3:"Your form", s3:"Preview of the form as it will be exported.",
+    pdf:"Export as PDF", docx:"Export as Word (.docx)", reset:"Clear everything",
+    resetQ:"Clear all answers?",
+    missing:n=>n+" activit"+(n>1?"ies have":"y has")+" no level yet. Choose a level for each one before exporting.",
+    pdfnote:"PDF export: the print dialog opens, choose \"Save as PDF\" as the destination.",
+    fTitle:"AI usage declaration",
+    fSrc:"Framework for analysing AI usage, Faculty of Geosciences and Environment, University of Lausanne",
+    fGrid:"AI usage declaration grid", fCorner:"Activities / Level of integration",
+    fDet:"Details of declared uses", cAct:"Activity", cLv:"Level", cWhat:"What it covers", cTool:"Tool(s)", cDet:"Details",
+    noUse:"No use of AI is declared for this work.",
+    decl:"I declare that this grid faithfully describes the use I made of AI in this work.",
+    sDate:"Place and date", sSign:"Signature",
+    unset:"not specified", file:"ai-usage-declaration",
+    f1:"Framework for analysing AI usage: Johann Lüthi, Faculty of Geosciences and Environment, University of Lausanne. This page is not an official UNIL publication.",
+    f2:"No data is sent anywhere: your answers stay in your browser, on this device."
+  }
+};
+
+/* ---------- État ---------- */
+const KEY = "declaration-usage-ia-v1";
+const today = () => { const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+function blank(){ const s = {lang:"fr", meta:{name:"",course:"",title:"",date:today()}, acts:{}}; ACTS.forEach(a => s.acts[a.id] = {level:null, tool:"", detail:""}); return s; }
+let S = blank();
+try {
+  const o = JSON.parse(localStorage.getItem(KEY) || "null");
+  if (o && o.acts && o.meta) {
+    S.lang = o.lang === "en" ? "en" : "fr";
+    META.forEach(k => { if (typeof o.meta[k] === "string") S.meta[k] = o.meta[k]; });
+    ACTS.forEach(a => { const v = o.acts[a.id]; if (v) S.acts[a.id] = {level: Number.isInteger(v.level) && v.level >= 0 && v.level <= 4 ? v.level : null, tool: String(v.tool || ""), detail: String(v.detail || "")}; });
+  } else if ((navigator.language || "").toLowerCase().startsWith("en")) S.lang = "en";
+} catch (e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+const $ = id => document.getElementById(id);
+function el(tag, attrs, kids){
+  const n = document.createElement(tag);
+  for (const k in (attrs || {})) { if (k === "text") n.textContent = attrs[k]; else if (k === "class") n.className = attrs[k]; else n.setAttribute(k, attrs[k]); }
+  (kids || []).forEach(c => n.appendChild(c));
+  return n;
+}
+function fmtDate(iso, lang){
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+  if (!m) return iso || "";
+  return lang === "fr" ? m[3]+"."+m[2]+"."+m[1] : new Date(+m[1], +m[2]-1, +m[3]).toLocaleDateString("en-GB", {day:"numeric", month:"long", year:"numeric"});
+}
+
+/* ---------- Formulaire ---------- */
+function renderStatic(){
+  const t = T[S.lang];
+  document.documentElement.lang = S.lang;
+  document.title = t.docTitle;
+  const map = {"t-fac":t.fac,"t-title":t.title,"t-lead":t.lead,"t-h1":t.h1,"t-s1":t.s1,"t-h2":t.h2,"t-s2":t.s2,"t-h3":t.h3,"t-s3":t.s3,"b-none":t.none,"b-pdf":t.pdf,"b-docx":t.docx,"b-reset":t.reset,"t-pdfnote":t.pdfnote,"t-f1":t.f1,"t-f2":t.f2};
+  for (const id in map) $(id).textContent = map[id];
+  document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === S.lang)));
+  $("msg").hidden = true;
+}
+function renderForm(){
+  const t = T[S.lang], L = LEVELS[S.lang];
+  const meta = $("meta"); meta.textContent = "";
+  META.forEach(k => {
+    const inp = el("input", {type: k === "date" ? "date" : "text", id: "m-"+k, autocomplete: k === "name" ? "name" : "off"});
+    inp.value = S.meta[k];
+    inp.addEventListener("input", () => { S.meta[k] = inp.value; save(); renderFiche(); });
+    meta.appendChild(el("label", {class:"f"}, [document.createTextNode(k === "title" ? t.title_ : t[k]), inp]));
+  });
+  const box = $("acts"); box.textContent = "";
+  ACTS.forEach(a => {
+    const A = a[S.lang], st = S.acts[a.id];
+    const fs = el("fieldset", {class:"act", id:"fs-"+a.id});
+    fs.appendChild(el("legend", {text:A.name}));
+    fs.appendChild(el("p", {class:"d", text:A.desc}));
+    const lvs = el("div", {class:"lvs"});
+    const more = el("div", {class:"more"});
+    L.forEach((lv, i) => {
+      const r = el("input", {type:"radio", name:"lv-"+a.id, value:String(i)});
+      r.checked = st.level === i;
+      r.addEventListener("change", () => { st.level = i; more.hidden = i === 0; fs.classList.remove("missing"); save(); renderFiche(); });
+      const sp = el("span", {}, [el("b", {text:lv.name}), document.createTextNode(A.lv[i])]);
+      lvs.appendChild(el("label", {class:"lv", title:lv.desc}, [r, sp]));
+    });
+    fs.appendChild(lvs);
+    const tool = el("input", {type:"text", placeholder:t.toolPh}); tool.value = st.tool;
+    tool.addEventListener("input", () => { st.tool = tool.value; save(); renderFiche(); });
+    const det = el("textarea", {placeholder:t.detailPh, rows:"2"}); det.value = st.detail;
+    det.addEventListener("input", () => { st.detail = det.value; save(); renderFiche(); });
+    more.appendChild(el("label", {class:"f"}, [document.createTextNode(t.tool), tool]));
+    more.appendChild(el("label", {class:"f"}, [document.createTextNode(t.detail), det]));
+    more.hidden = !(st.level > 0);
+    fs.appendChild(more);
+    box.appendChild(fs);
+  });
+}
+
+/* ---------- Modèle de la fiche (partagé par l'aperçu et l'export Word) ---------- */
+function model(){
+  const t = T[S.lang], L = LEVELS[S.lang];
+  const rows = ACTS.map(a => { const st = S.acts[a.id]; return {id:a.id, name:a[S.lang].name, level:st.level, what: st.level == null ? "" : a[S.lang].lv[st.level], tool:st.tool.trim(), detail:st.detail.trim()}; });
+  return {t, L, rows,
+    meta:[[t.name,S.meta.name.trim()],[t.course,S.meta.course.trim()],[t.title_,S.meta.title.trim()],[t.date,fmtDate(S.meta.date,S.lang)]],
+    used: rows.filter(r => r.level > 0),
+    done: rows.filter(r => r.level != null).length};
+}
+function renderFiche(){
+  const m = model(), t = m.t, f = $("fiche");
+  $("count").textContent = t.count(m.done, ACTS.length);
+  if (m.done === ACTS.length) $("msg").hidden = true;
+  f.textContent = "";
+  f.appendChild(el("h3", {text:t.fTitle}));
+  f.appendChild(el("p", {class:"src", text:t.fSrc}));
+  const dl = el("dl");
+  m.meta.forEach(([k, v]) => { dl.appendChild(el("dt", {text:k})); dl.appendChild(el("dd", v ? {text:v} : {text:t.unset, class:"empty"})); });
+  f.appendChild(dl);
+  f.appendChild(el("h4", {text:t.fGrid}));
+  const head = el("tr", {}, [el("th", {scope:"col", text:t.fCorner})].concat(m.L.map(l => el("th", {scope:"col", text:l.name}))));
+  const body = el("tbody");
+  m.rows.forEach(r => {
+    const tr = el("tr", {}, [el("th", {scope:"row", text:r.name})]);
+    m.L.forEach((l, i) => {
+      const on = r.level === i;
+      const bx = el("span", {class:"bx"+(on ? " on" : ""), role:"img", "aria-label": on ? "x" : ""});
+      tr.appendChild(el("td", {}, [bx]));
+    });
+    body.appendChild(tr);
+  });
+  f.appendChild(el("table", {class:"grid"}, [el("thead", {}, [head]), body]));
+  f.appendChild(el("h4", {text:t.fDet}));
+  if (!m.used.length) f.appendChild(el("p", {class:"empty", text: m.done === ACTS.length ? t.noUse : "…"}));
+  else {
+    const h = el("tr", {}, [t.cAct, t.cLv, t.cWhat, t.cTool, t.cDet].map(x => el("th", {scope:"col", text:x})));
+    const b = el("tbody");
+    m.used.forEach(r => b.appendChild(el("tr", {}, [el("th", {scope:"row", text:r.name}), el("td", {text:m.L[r.level].name}), el("td", {text:r.what}), el("td", {text:r.tool}), el("td", {text:r.detail})])));
+    f.appendChild(el("table", {class:"det"}, [el("thead", {}, [h]), b]));
+  }
+  f.appendChild(el("p", {class:"decl", text:t.decl}));
+  f.appendChild(el("div", {class:"sign"}, [el("div", {text:t.sDate}), el("div", {text:t.sSign})]));
+}
+
+/* ---------- Exports ---------- */
+function ready(){
+  const miss = ACTS.filter(a => S.acts[a.id].level == null);
+  document.querySelectorAll("fieldset.act").forEach(fs => fs.classList.remove("missing"));
+  if (!miss.length) { $("msg").hidden = true; return true; }
+  miss.forEach(a => $("fs-"+a.id).classList.add("missing"));
+  $("msg").textContent = T[S.lang].missing(miss.length); $("msg").hidden = false;
+  $("fs-"+miss[0].id).scrollIntoView({behavior:"smooth", block:"center"});
+  return false;
+}
+function fileBase(){
+  const n = S.meta.name.trim().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return T[S.lang].file + (n ? "-"+n : "");
+}
+function exportPdf(){
+  if (!ready()) return;
+  const old = document.title; document.title = fileBase();
+  const back = () => { document.title = old; window.removeEventListener("afterprint", back); };
+  window.addEventListener("afterprint", back);
+  window.print();
+}
+
+/* --- Word : un .docx minimal, écrit sans bibliothèque --- */
+const X = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "");
+function run(text, o){
+  o = o || {};
+  const pr = '<w:rPr><w:rFonts w:ascii="'+(o.font||"Calibri")+'" w:hAnsi="'+(o.font||"Calibri")+'" w:eastAsia="'+(o.font||"Calibri")+'" w:cs="'+(o.font||"Calibri")+'"/>'+(o.b?"<w:b/>":"")+(o.i?"<w:i/>":"")+'<w:color w:val="'+(o.color||"0A1F30")+'"/><w:sz w:val="'+(o.sz||21)+'"/><w:szCs w:val="'+(o.sz||21)+'"/></w:rPr>';
+  return String(text).split(/\r?\n/).map((ln, i) => "<w:r>"+pr+(i ? "<w:br/>" : "")+'<w:t xml:space="preserve">'+X(ln)+"</w:t></w:r>").join("");
+}
+function par(text, o){
+  o = o || {};
+  return '<w:p><w:pPr>'+(o.keep?"<w:keepNext/>":"")+'<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after==null?80:o.after)+'"/>'+(o.align?'<w:jc w:val="'+o.align+'"/>':"")+"</w:pPr>"+run(text, o)+"</w:p>";
+}
+function cell(w, inner, fill){
+  return '<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(fill?'<w:shd w:val="clear" w:color="auto" w:fill="'+fill+'"/>':"")+'<w:vAlign w:val="center"/></w:tcPr>'+inner+"</w:tc>";
+}
+function table(widths, rows){
+  const b = n => "<w:"+n+' w:val="single" w:sz="4" w:space="0" w:color="C9D3DD"/>';
+  return '<w:tbl><w:tblPr><w:tblW w:w="'+widths.reduce((a, c) => a+c, 0)+'" w:type="dxa"/><w:tblBorders>'+["top","left","bottom","right","insideH","insideV"].map(b).join("")+'</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="90" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="90" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>'+widths.map(w => '<w:gridCol w:w="'+w+'"/>').join("")+"</w:tblGrid>"+rows.join("")+"</w:tbl>";
+}
+function docXml(){
+  const m = model(), t = m.t, NAVY = "002664", SLATE = "42566A";
+  let b = par(t.fTitle, {b:true, sz:36, color:NAVY, after:40}) + par(t.fSrc, {sz:17, color:SLATE, after:240});
+  m.meta.forEach(([k, v]) => { b += '<w:p><w:pPr><w:spacing w:before="0" w:after="40"/></w:pPr>'+run(k+(S.lang === "fr" ? " : " : ": "), {b:true, color:SLATE})+run(v || "")+"</w:p>"; });
+  b += par(t.fGrid.toUpperCase(), {b:true, sz:21, color:NAVY, before:280, after:100, keep:true});
+  const gw = [2638, 1400, 1400, 1400, 1400, 1400];
+  const gr = ['<w:tr><w:trPr><w:cantSplit/><w:tblHeader/></w:trPr>'+cell(gw[0], par(t.fCorner, {b:true, sz:18, color:"FFFFFF", after:0}), NAVY)+m.L.map((l, i) => cell(gw[i+1], par(l.name, {b:true, sz:18, color:"FFFFFF", after:0, align:"center"}), NAVY)).join("")+"</w:tr>"];
+  m.rows.forEach((r, k) => {
+    const fill = k % 2 ? "E8F0FE" : null;
+    gr.push('<w:tr><w:trPr><w:cantSplit/></w:trPr>'+cell(gw[0], par(r.name, {b:true, sz:20, color:NAVY, after:0}), fill)+m.L.map((l, i) => cell(gw[i+1], par(r.level === i ? "☒" : "☐", {sz:26, color:NAVY, after:0, align:"center", font:"Segoe UI Symbol"}), fill)).join("")+"</w:tr>");
+  });
+  b += table(gw, gr);
+  b += par(t.fDet.toUpperCase(), {b:true, sz:21, color:NAVY, before:320, after:100, keep:true});
+  if (!m.used.length) b += par(t.noUse, {i:true, color:SLATE});
+  else {
+    const dw = [1700, 1250, 2300, 1500, 2888];
+    const dr = ['<w:tr><w:trPr><w:cantSplit/><w:tblHeader/></w:trPr>'+[t.cAct, t.cLv, t.cWhat, t.cTool, t.cDet].map((h, i) => cell(dw[i], par(h, {b:true, sz:18, color:"FFFFFF", after:0}), NAVY)).join("")+"</w:tr>"];
+    m.used.forEach(r => dr.push("<w:tr>"+cell(dw[0], par(r.name, {b:true, sz:19, color:NAVY, after:0}))+[m.L[r.level].name, r.what, r.tool, r.detail].map((v, i) => cell(dw[i+1], par(v, {sz:19, after:0}))).join("")+"</w:tr>"));
+    b += table(dw, dr);
+  }
+  b += par(t.decl, {before:320, after:600});
+  const sw = [4500, 638, 4500], line = '<w:tcBorders><w:top w:val="single" w:sz="6" w:space="0" w:color="0A1F30"/></w:tcBorders>';
+  const sc = (w, txt, top) => '<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(top ? line : "")+"</w:tcPr>"+par(txt, {sz:18, color:SLATE, after:0})+"</w:tc>";
+  b += '<w:tbl><w:tblPr><w:tblW w:w="9638" w:type="dxa"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+sw.map(w => '<w:gridCol w:w="'+w+'"/>').join("")+"</w:tblGrid><w:tr>"+sc(sw[0], t.sDate, true)+sc(sw[1], "", false)+sc(sw[2], t.sSign, true)+"</w:tr></w:tbl>";
+  b += par("", {after:0});
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+b+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>';
+}
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u8){ let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zip(files){
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  const put = (arr, len) => { const u = new Uint8Array(len), v = new DataView(u.buffer); let p = 0; arr.forEach(([size, val]) => { if (size === 2) v.setUint16(p, val, true); else v.setUint32(p, val, true); p += size; }); return u; };
+  files.forEach(([name, text]) => {
+    const n = enc.encode(name), d = enc.encode(text), crc = crc32(d);
+    const local = put([[4,0x04034b50],[2,20],[2,0x0800],[2,0],[2,0],[2,0x21],[4,crc],[4,d.length],[4,d.length],[2,n.length],[2,0]], 30);
+    central.push([put([[4,0x02014b50],[2,20],[2,20],[2,0x0800],[2,0],[2,0],[2,0x21],[4,crc],[4,d.length],[4,d.length],[2,n.length],[2,0],[2,0],[2,0],[2,0],[4,0],[4,off]], 46), n]);
+    parts.push(local, n, d); off += 30 + n.length + d.length;
+  });
+  let csize = 0; central.forEach(([h, n]) => { parts.push(h, n); csize += h.length + n.length; });
+  parts.push(put([[4,0x06054b50],[2,0],[2,0],[2,files.length],[2,files.length],[4,csize],[4,off],[2,0]], 22));
+  return new Blob(parts, {type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+}
+function buildDocx(){
+  return zip([
+    ["[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'],
+    ["_rels/.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'],
+    ["word/document.xml", docXml()]
+  ]);
+}
+function exportDocx(){
+  if (!ready()) return;
+  const url = URL.createObjectURL(buildDocx());
+  const a = el("a", {href:url, download:fileBase()+".docx"});
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/* ---------- Branchements ---------- */
+function renderAll(){ renderStatic(); renderForm(); renderFiche(); }
+document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => { S.lang = b.dataset.lang; save(); renderAll(); }));
+$("b-none").addEventListener("click", () => { ACTS.forEach(a => { S.acts[a.id].level = 0; }); save(); renderAll(); });
+$("b-reset").addEventListener("click", () => { if (!confirm(T[S.lang].resetQ)) return; const lang = S.lang; S = blank(); S.lang = lang; save(); renderAll(); });
+$("b-pdf").addEventListener("click", exportPdf);
+$("b-docx").addEventListener("click", exportDocx);
+renderAll();
+</script>
+</body>
+</html>
