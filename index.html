@@ -20,7 +20,7 @@ body{margin:0;font-family:var(--font);color:var(--ink);background:var(--bg);line
 .band-blue{background:var(--blue);color:#fff;font-size:14px;font-weight:600;letter-spacing:.02em}
 .band-blue .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:8px;padding-bottom:8px}
 .lang{display:flex;gap:4px}
-.lang button{font:inherit;font-size:13px;border:1px solid rgba(255,255,255,.6);background:transparent;color:#fff;padding:3px 10px;border-radius:2px;cursor:pointer}
+.lang button{white-space:nowrap;font:inherit;font-size:13px;border:1px solid rgba(255,255,255,.6);background:transparent;color:#fff;padding:3px 10px;border-radius:2px;cursor:pointer}
 .lang button[aria-pressed="true"]{background:#fff;color:var(--navy);border-color:#fff}
 .hero{background:var(--navy);color:#fff;position:relative;overflow:hidden}
 .hero::after{content:"";position:absolute;right:-110px;top:-150px;width:340px;height:340px;border-radius:50%;background:var(--blue)}
@@ -111,8 +111,7 @@ footer p{margin:0 0 6px}
 <div class="band-blue"><div class="wrap">
   <span id="t-fac"></span>
   <div class="lang" role="group" aria-label="Langue / Language">
-    <button type="button" data-lang="fr">FR</button>
-    <button type="button" data-lang="en">EN</button>
+    <button type="button" id="b-lang" lang="en">English</button>
   </div>
 </div></div>
 <header class="hero"><div class="wrap">
@@ -290,7 +289,7 @@ try {
     S.lang = o.lang === "en" ? "en" : "fr";
     META.forEach(k => { if (typeof o.meta[k] === "string") S.meta[k] = o.meta[k]; });
     ACTS.forEach(a => { const v = o.acts[a.id]; if (v) S.acts[a.id] = {level: Number.isInteger(v.level) && v.level >= 0 && v.level <= 4 ? v.level : null, tool: String(v.tool || ""), detail: String(v.detail || "")}; });
-  } else if ((navigator.language || "").toLowerCase().startsWith("en")) S.lang = "en";
+  }
 } catch (e) {}
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -314,7 +313,7 @@ function renderStatic(){
   document.title = t.docTitle;
   const map = {"t-fac":t.fac,"t-title":t.title,"t-lead":t.lead,"t-h1":t.h1,"t-s1":t.s1,"t-h2":t.h2,"t-s2":t.s2,"t-h3":t.h3,"t-s3":t.s3,"b-none":t.none,"b-pdf":t.pdf,"b-docx":t.docx,"b-reset":t.reset,"t-pdfnote":t.pdfnote,"t-f1":t.f1,"t-f2":t.f2};
   for (const id in map) $(id).textContent = map[id];
-  document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === S.lang)));
+  const bl = $("b-lang"); bl.textContent = S.lang === "fr" ? "English" : "Français"; bl.lang = S.lang === "fr" ? "en" : "fr";
   $("msg").hidden = true;
 }
 function renderForm(){
@@ -497,7 +496,7 @@ function exportDocx(){
 
 /* ---------- Branchements ---------- */
 function renderAll(){ renderStatic(); renderForm(); renderFiche(); }
-document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => { S.lang = b.dataset.lang; save(); renderAll(); }));
+$("b-lang").addEventListener("click", () => { S.lang = S.lang === "fr" ? "en" : "fr"; save(); renderAll(); });
 $("b-none").addEventListener("click", () => { ACTS.forEach(a => { S.acts[a.id].level = 0; }); save(); renderAll(); });
 $("b-reset").addEventListener("click", () => { if (!confirm(T[S.lang].resetQ)) return; const lang = S.lang; S = blank(); S.lang = lang; save(); renderAll(); });
 $("b-pdf").addEventListener("click", exportPdf);
