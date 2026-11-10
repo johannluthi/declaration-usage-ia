@@ -43,6 +43,7 @@ fieldset.act legend{padding:0;font-size:18px;font-weight:700;color:var(--navy);f
 fieldset.act .d{clear:both;margin:0 0 10px;color:var(--slate);font-size:14.5px}
 fieldset.act.missing legend{color:var(--err)}
 fieldset.act.missing .lvs{outline:2px solid var(--err);outline-offset:4px}
+fieldset.act.nodetail textarea{border-color:var(--err);box-shadow:0 0 0 1px var(--err)}
 .lvs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .lv{position:relative;display:block;cursor:pointer}
 .lv input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
@@ -230,11 +231,12 @@ const T = {
     none:"Je n'ai utilisé l'IA pour aucune activité",
     count:(n,t)=>n+" activité"+(n>1?"s":"")+" renseignée"+(n>1?"s":"")+" sur "+t,
     tool:"Outil(s) utilisé(s)", toolPh:"p. ex. Copilot, ChatGPT, DeepL",
-    detail:"Précisions (facultatif)", detailPh:"Ce que vous avez demandé, ce que vous avez gardé ou modifié",
+    detail:"Précisions", detailPh:"Ce que vous avez demandé, ce que vous avez gardé ou modifié",
     h3:"Votre fiche", s3:"Aperçu de la fiche telle qu'elle sera exportée.",
     pdf:"Exporter en PDF", docx:"Exporter en Word (.docx)", reset:"Tout effacer",
     resetQ:"Effacer toutes les réponses ?",
     missing:n=>"Il reste "+n+" activité"+(n>1?"s":"")+" sans niveau. Indiquez un niveau pour chacune avant d'exporter.",
+    missingDet:n=>"Il manque les précisions pour "+n+" activité"+(n>1?"s":"")+". Elles sont demandées pour chaque activité où l'IA a été utilisée.",
     pdfnote:"Export PDF : la fenêtre d'impression s'ouvre, choisissez « Enregistrer au format PDF » comme destination.",
     fTitle:"Déclaration d'usage de l'IA",
     fSrc:"Grille d'analyse des usages d'IA, Faculté des géosciences et de l'environnement, Université de Lausanne",
@@ -259,11 +261,12 @@ const T = {
     none:"I did not use AI for any activity",
     count:(n,t)=>n+" of "+t+" activities completed",
     tool:"Tool(s) used", toolPh:"e.g. Copilot, ChatGPT, DeepL",
-    detail:"Details (optional)", detailPh:"What you asked for, what you kept or changed",
+    detail:"Details", detailPh:"What you asked for, what you kept or changed",
     h3:"Your form", s3:"Preview of the form as it will be exported.",
     pdf:"Export as PDF", docx:"Export as Word (.docx)", reset:"Clear everything",
     resetQ:"Clear all answers?",
     missing:n=>n+" activit"+(n>1?"ies have":"y has")+" no level yet. Choose a level for each one before exporting.",
+    missingDet:n=>"Details are missing for "+n+" activit"+(n>1?"ies":"y")+". They are required for every activity where AI was used.",
     pdfnote:"PDF export: the print dialog opens, choose \"Save as PDF\" as the destination.",
     fTitle:"AI usage declaration",
     fSrc:"Framework for analysing AI usage, Faculty of Geosciences and Environment, University of Lausanne",
@@ -336,15 +339,15 @@ function renderForm(){
     L.forEach((lv, i) => {
       const r = el("input", {type:"radio", name:"lv-"+a.id, value:String(i)});
       r.checked = st.level === i;
-      r.addEventListener("change", () => { st.level = i; more.hidden = i === 0; fs.classList.remove("missing"); save(); renderFiche(); });
+      r.addEventListener("change", () => { st.level = i; more.hidden = i === 0; fs.classList.remove("missing"); if (i === 0) fs.classList.remove("nodetail"); save(); renderFiche(); });
       const sp = el("span", {}, [el("b", {text:lv.name}), document.createTextNode(A.lv[i])]);
       lvs.appendChild(el("label", {class:"lv", title:lv.desc}, [r, sp]));
     });
     fs.appendChild(lvs);
     const tool = el("input", {type:"text", placeholder:t.toolPh}); tool.value = st.tool;
     tool.addEventListener("input", () => { st.tool = tool.value; save(); renderFiche(); });
-    const det = el("textarea", {placeholder:t.detailPh, rows:"2"}); det.value = st.detail;
-    det.addEventListener("input", () => { st.detail = det.value; save(); renderFiche(); });
+    const det = el("textarea", {placeholder:t.detailPh, rows:"2", required:"", "aria-required":"true"}); det.value = st.detail;
+    det.addEventListener("input", () => { st.detail = det.value; if (det.value.trim()) fs.classList.remove("nodetail"); save(); renderFiche(); });
     more.appendChild(el("label", {class:"f"}, [document.createTextNode(t.tool), tool]));
     more.appendChild(el("label", {class:"f"}, [document.createTextNode(t.detail), det]));
     more.hidden = !(st.level > 0);
@@ -400,8 +403,16 @@ function renderFiche(){
 /* ---------- Exports ---------- */
 function ready(){
   const miss = ACTS.filter(a => S.acts[a.id].level == null);
-  document.querySelectorAll("fieldset.act").forEach(fs => fs.classList.remove("missing"));
-  if (!miss.length) { $("msg").hidden = true; return true; }
+  document.querySelectorAll("fieldset.act").forEach(fs => fs.classList.remove("missing", "nodetail"));
+  if (!miss.length) {
+    const nd = ACTS.filter(a => S.acts[a.id].level > 0 && !S.acts[a.id].detail.trim());
+    if (!nd.length) { $("msg").hidden = true; return true; }
+    nd.forEach(a => $("fs-"+a.id).classList.add("nodetail"));
+    $("msg").textContent = T[S.lang].missingDet(nd.length); $("msg").hidden = false;
+    const ta = $("fs-"+nd[0].id).querySelector("textarea");
+    ta.scrollIntoView({behavior:"smooth", block:"center"}); ta.focus({preventScroll:true});
+    return false;
+  }
   miss.forEach(a => $("fs-"+a.id).classList.add("missing"));
   $("msg").textContent = T[S.lang].missing(miss.length); $("msg").hidden = false;
   $("fs-"+miss[0].id).scrollIntoView({behavior:"smooth", block:"center"});
