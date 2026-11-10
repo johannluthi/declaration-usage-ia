@@ -43,7 +43,7 @@ fieldset.act legend{padding:0;font-size:18px;font-weight:700;color:var(--navy);f
 fieldset.act .d{clear:both;margin:0 0 10px;color:var(--slate);font-size:14.5px}
 fieldset.act.missing legend{color:var(--err)}
 fieldset.act.missing .lvs{outline:2px solid var(--err);outline-offset:4px}
-fieldset.act.nodetail textarea{border-color:var(--err);box-shadow:0 0 0 1px var(--err)}
+fieldset.act.nodetail textarea,fieldset.act.notool input[type=text]{border-color:var(--err);box-shadow:0 0 0 1px var(--err)}
 .lvs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .lv{position:relative;display:block;cursor:pointer}
 .lv input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
@@ -236,7 +236,7 @@ const T = {
     pdf:"Exporter en PDF", docx:"Exporter en Word (.docx)", reset:"Tout effacer",
     resetQ:"Effacer toutes les réponses ?",
     missing:n=>"Il reste "+n+" activité"+(n>1?"s":"")+" sans niveau. Indiquez un niveau pour chacune avant d'exporter.",
-    missingDet:n=>"Il manque les précisions pour "+n+" activité"+(n>1?"s":"")+". Elles sont demandées pour chaque activité où l'IA a été utilisée.",
+    missingDet:n=>"Il manque l'outil ou les précisions pour "+n+" activité"+(n>1?"s":"")+". Les deux sont demandés pour chaque activité où l'IA a été utilisée.",
     pdfnote:"Export PDF : la fenêtre d'impression s'ouvre, choisissez « Enregistrer au format PDF » comme destination.",
     fTitle:"Déclaration d'usage de l'IA",
     fSrc:"Grille d'analyse des usages d'IA, Faculté des géosciences et de l'environnement, Université de Lausanne",
@@ -266,7 +266,7 @@ const T = {
     pdf:"Export as PDF", docx:"Export as Word (.docx)", reset:"Clear everything",
     resetQ:"Clear all answers?",
     missing:n=>n+" activit"+(n>1?"ies have":"y has")+" no level yet. Choose a level for each one before exporting.",
-    missingDet:n=>"Details are missing for "+n+" activit"+(n>1?"ies":"y")+". They are required for every activity where AI was used.",
+    missingDet:n=>"The tool or the details are missing for "+n+" activit"+(n>1?"ies":"y")+". Both are required for every activity where AI was used.",
     pdfnote:"PDF export: the print dialog opens, choose \"Save as PDF\" as the destination.",
     fTitle:"AI usage declaration",
     fSrc:"Framework for analysing AI usage, Faculty of Geosciences and Environment, University of Lausanne",
@@ -339,13 +339,13 @@ function renderForm(){
     L.forEach((lv, i) => {
       const r = el("input", {type:"radio", name:"lv-"+a.id, value:String(i)});
       r.checked = st.level === i;
-      r.addEventListener("change", () => { st.level = i; more.hidden = i === 0; fs.classList.remove("missing"); if (i === 0) fs.classList.remove("nodetail"); save(); renderFiche(); });
+      r.addEventListener("change", () => { st.level = i; more.hidden = i === 0; fs.classList.remove("missing"); if (i === 0) fs.classList.remove("nodetail", "notool"); save(); renderFiche(); });
       const sp = el("span", {}, [el("b", {text:lv.name}), document.createTextNode(A.lv[i])]);
       lvs.appendChild(el("label", {class:"lv", title:lv.desc}, [r, sp]));
     });
     fs.appendChild(lvs);
-    const tool = el("input", {type:"text", placeholder:t.toolPh}); tool.value = st.tool;
-    tool.addEventListener("input", () => { st.tool = tool.value; save(); renderFiche(); });
+    const tool = el("input", {type:"text", placeholder:t.toolPh, required:"", "aria-required":"true"}); tool.value = st.tool;
+    tool.addEventListener("input", () => { st.tool = tool.value; if (tool.value.trim()) fs.classList.remove("notool"); save(); renderFiche(); });
     const det = el("textarea", {placeholder:t.detailPh, rows:"2", required:"", "aria-required":"true"}); det.value = st.detail;
     det.addEventListener("input", () => { st.detail = det.value; if (det.value.trim()) fs.classList.remove("nodetail"); save(); renderFiche(); });
     more.appendChild(el("label", {class:"f"}, [document.createTextNode(t.tool), tool]));
@@ -403,13 +403,13 @@ function renderFiche(){
 /* ---------- Exports ---------- */
 function ready(){
   const miss = ACTS.filter(a => S.acts[a.id].level == null);
-  document.querySelectorAll("fieldset.act").forEach(fs => fs.classList.remove("missing", "nodetail"));
+  document.querySelectorAll("fieldset.act").forEach(fs => fs.classList.remove("missing", "nodetail", "notool"));
   if (!miss.length) {
-    const nd = ACTS.filter(a => S.acts[a.id].level > 0 && !S.acts[a.id].detail.trim());
+    const nd = ACTS.filter(a => S.acts[a.id].level > 0 && !(S.acts[a.id].detail.trim() && S.acts[a.id].tool.trim()));
     if (!nd.length) { $("msg").hidden = true; return true; }
-    nd.forEach(a => $("fs-"+a.id).classList.add("nodetail"));
+    nd.forEach(a => { const st = S.acts[a.id], f = $("fs-"+a.id); if (!st.tool.trim()) f.classList.add("notool"); if (!st.detail.trim()) f.classList.add("nodetail"); });
     $("msg").textContent = T[S.lang].missingDet(nd.length); $("msg").hidden = false;
-    const ta = $("fs-"+nd[0].id).querySelector("textarea");
+    const ta = $("fs-"+nd[0].id).querySelector(S.acts[nd[0].id].tool.trim() ? "textarea" : "input[type=text]");
     ta.scrollIntoView({behavior:"smooth", block:"center"}); ta.focus({preventScroll:true});
     return false;
   }
