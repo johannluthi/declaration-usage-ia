@@ -11,4 +11,4 @@ Pour adapter la grille (activités, niveaux, libellés), modifier les constantes
 
 Cette page n'est pas une publication officielle de l'UNIL.
 
-La grille vierge est aussi disponible en Word, modifiable : `grille-usage-ia.docx` (français) et `ai-usage-grid.docx` (anglais). Les deux fichiers reprennent les niveaux, la description par activité et une grille à cocher.
+La grille vierge est aussi disponible en Word, modifiable : `grille-usage-ia.docx` (français) et `ai-usage-grid.docx` (anglais). Les deux fichiers reprennent les niveaux, la description par activité et la grille de déclaration d'usage avec des cases à cocher cliquables.
