@@ -10,3 +10,5 @@ Page web qui permet à un·e étudiant·e de construire sa fiche de déclaration
 Pour adapter la grille (activités, niveaux, libellés), modifier les constantes `LEVELS`, `ACTS` et `T` au début du script de `index.html`.
 
 Cette page n'est pas une publication officielle de l'UNIL.
+
+La grille vierge est aussi disponible en Word, modifiable : `grille-usage-ia.docx` (français) et `ai-usage-grid.docx` (anglais). Les deux fichiers reprennent les niveaux, la description par activité et une grille à cocher.
