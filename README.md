@@ -12,3 +12,7 @@ Pour adapter la grille (activités, niveaux, libellés), modifier les constantes
 Cette page n'est pas une publication officielle de l'UNIL.
 
 La grille vierge est aussi disponible en Word, modifiable : `grille-usage-ia.docx` (français) et `ai-usage-grid.docx` (anglais). Les deux fichiers reprennent les niveaux, la description par activité et la grille de déclaration d'usage avec des cases à cocher cliquables.
+
+## Licence
+
+CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) : réutilisation et adaptation libres, avec mention de la source. Attribution proposée : « Grille d’analyse des usages d’IA, Johann Lüthi, Faculté des géosciences et de l’environnement, Université de Lausanne, 2026, CC BY 4.0 ».
